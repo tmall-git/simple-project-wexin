@@ -1,11 +1,30 @@
 package com.simple.weixin.auth;
 
+import org.springframework.util.StringUtils;
+
 
 public class WeiXinAuth {
 
+	private static String GLOBAL_ACCESS_TOKEN = null;//全局token
+	private static Object lock = new Object();
 	
 	public static OAuthAccessToken getOAuthAccessToken(String code) {
 		return WeiXinHelper.getOAuthAccessToken(code);
+	}
+	
+	public static void installAcessToken() {
+		GLOBAL_ACCESS_TOKEN = WeiXinHelper.getGlobalAccessToken();
+	}
+	
+	public static String getGlobalAccessToken() {
+		if (StringUtils.isEmpty(GLOBAL_ACCESS_TOKEN)) {
+			synchronized (lock) {
+				while (StringUtils.isEmpty(GLOBAL_ACCESS_TOKEN)) {
+					installAcessToken(); 
+				}
+			}
+		}
+		return GLOBAL_ACCESS_TOKEN;
 	}
 	
 //	public static OAuthUserInfo authInfo(String code) {

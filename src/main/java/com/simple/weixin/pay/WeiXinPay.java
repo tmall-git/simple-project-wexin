@@ -21,12 +21,12 @@ import com.simple.common.util.PrimaryKeyUtil;
 
 public class WeiXinPay {
 
-	public static WeiXinPrePayResult pay(HttpServletRequest request,String openId,String orderNo,String weixinName,String goodsTypeName,double money) throws JDOMException, IOException {
+	public static WeiXinPrePayResult pay(HttpServletRequest request,String openId,String orderNo,double money) throws JDOMException, IOException {
 		SortedMap<Object,Object> parameters = new TreeMap<Object,Object>();
 		parameters.put("appid", EnvPropertiesConfiger.getValue("weixin_appid"));
 		parameters.put("mch_id", EnvPropertiesConfiger.getValue("mch_id"));
 		parameters.put("nonce_str", PrimaryKeyUtil.getRandomString());
-		parameters.put("body", weixinName+"-"+goodsTypeName);
+		parameters.put("body", EnvPropertiesConfiger.getValue("mch_name")+"-"+EnvPropertiesConfiger.getValue("goods_type_name"));
 		parameters.put("out_trade_no", orderNo);
 		parameters.put("total_fee", Integer.parseInt(new DecimalFormat("0").format(money*100)));
 		parameters.put("spbill_create_ip",PayCommonUtil.getIpAddr(request));
@@ -72,9 +72,9 @@ public class WeiXinPay {
         inStream.close();
         String result  = new String(outSteam.toByteArray(),"utf-8");//获取微信调用我们notify_url的返回信息
         Map<Object, Object> map = XMLUtil.doXMLParse(result);
-        for(Object keyValue : map.keySet()){
-            System.out.println(keyValue+"="+map.get(keyValue));
-        }
+        //for(Object keyValue : map.keySet()){
+        //    System.out.println(keyValue+"="+map.get(keyValue));
+        //}
         if (map.get("result_code").toString().equalsIgnoreCase("SUCCESS")) {
             //TODO 对数据库的操作
             response.getWriter().write(PayCommonUtil.setXML("SUCCESS", ""));   //告诉微信服务器，我收到信息了，不要在调用回调action了
