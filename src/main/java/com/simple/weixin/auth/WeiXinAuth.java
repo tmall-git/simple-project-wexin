@@ -1,5 +1,7 @@
 package com.simple.weixin.auth;
 
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.util.StringUtils;
 
 
@@ -26,6 +28,20 @@ public class WeiXinAuth {
 		}
 		return GLOBAL_ACCESS_TOKEN;
 	}
+	
+	public static String getAuthUrl(String callBackUrl,boolean isAuth,String state) {
+		try {
+			if (isAuth) {
+				return WeiXinHelper.getOAuthURL(callBackUrl, ScopeType.snsapi_userinfo, state);
+			}else {
+				return WeiXinHelper.getOAuthURL(callBackUrl, ScopeType.snsapi_base, state);
+			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	
 //	public static OAuthUserInfo authInfo(String code) {
 //		OAuthAccessToken authAccessToken = getOAuthAccessToken(code);

@@ -41,11 +41,13 @@ public class WeiXinPay {
 		return JSON.parseObject(JSON.toJSONString(map),WeiXinPrePayResult.class);
 	}
 	
-	public static String getRequestJson(WeiXinPrePayResult result,HttpServletRequest request) {
+	public static WeiXinPayConfig getPayConfig(WeiXinPrePayResult result,HttpServletRequest request) {
 		SortedMap<Object,Object> params = new TreeMap<Object,Object>();
         params.put("appId", result.getAppid());
-        params.put("timeStamp", Long.toString(new Date().getTime()));
-        params.put("nonceStr", PrimaryKeyUtil.getRandomString());
+        String timeStamp = Long.toString(new Date().getTime());
+        params.put("timeStamp", timeStamp);
+        String nonceStr = PrimaryKeyUtil.getRandomString();
+        params.put("nonceStr", nonceStr);
         params.put("package", "prepay_id="+result.getPrepay_id());
         params.put("signType", "MD5");
         String paySign =  PayCommonUtil.createSign(params);
@@ -55,7 +57,18 @@ public class WeiXinPay {
         String userAgent = request.getHeader("user-agent");
         char agent = userAgent.charAt(userAgent.indexOf("MicroMessenger")+15);
         params.put("agent", new String(new char[]{agent}));//微信版本号，用于前面提到的判断用户手机微信的版本是否是5.0以上版本。
-        return JSONObject.toJSONString(params).toString();
+        
+        WeiXinPayConfig wc = new WeiXinPayConfig();
+        wc.setAppId(result.getAppid());
+        wc.setTimeStamp(timeStamp);
+        wc.setNonceStr(nonceStr);
+        wc.setLpackage("prepay_id="+result.getPrepay_id());
+        wc.setSignType("MD5");
+        wc.setPackageValue("prepay_id="+result.getPrepay_id());
+        wc.setPaySign(paySign);
+        wc.setSendUrl(EnvPropertiesConfiger.getValue("success_url"));
+        wc.setAgent(new String(new char[]{agent}));
+        return wc;
 	}
 	
 	

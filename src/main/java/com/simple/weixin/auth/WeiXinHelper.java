@@ -1,11 +1,14 @@
 package com.simple.weixin.auth;
 
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-
 import com.simple.common.config.EnvPropertiesConfiger;
 import com.simple.weixin.util.HttpUtil;
 
@@ -21,7 +24,8 @@ public class WeiXinHelper {
 	public static final String user_info_is_follow_url = "http://api.weixin.qq.com/cgi-bin/user/info";
 	/**全局access_token获取地址*/
 	public static final String access_token_url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + EnvPropertiesConfiger.getValue("weixin_appid") +"&secret=" + EnvPropertiesConfiger.getValue("weixin_secret");
-	
+	/**网页授权获，OAuth2.0请求接口地址*/
+	public static final String oauth_page_connect_url = "https://open.weixin.qq.com/connect/oauth2/authorize";
 	
 	
 	/**
@@ -98,5 +102,28 @@ public class WeiXinHelper {
 			log.error("request access_token fail.", e);
 		}
 		return access_token;
+	}
+	
+	/**
+	 * 
+	 * @Description: 网页授权，生成OAuth2.0接口请求地址
+	 * @param callbackUrl 回调地址
+	 * @param scope 应用授权作用域
+	 * @param state 回调地址会带上state参数，可以填写a-zA-Z0-9的参数值，最多128字节
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static String getOAuthURL(String callbackUrl, ScopeType scope, String state)
+			throws UnsupportedEncodingException {
+		StringBuilder url = new StringBuilder();
+		url.append(oauth_page_connect_url)
+			.append("?appid=").append(EnvPropertiesConfiger.getValue("weixin_appid"))
+			.append("&redirect_uri=").append(URLEncoder.encode(callbackUrl, "UTF-8"))
+			.append("&response_type=code&scope=").append(scope.name());
+		if(state != null) {
+			url.append("&state=").append(state);
+		}
+			url.append("#wechat_redirect");
+		return url.toString();
 	}
 }
