@@ -12,7 +12,6 @@ public class WeiXinPayConfig implements Serializable{
 	private String signType;
 	private String packageValue;
 	private String paySign;
-	private String sendUrl;
 	private String agent;
 	public String getAppId() {
 		return appId;
@@ -55,12 +54,6 @@ public class WeiXinPayConfig implements Serializable{
 	}
 	public void setPaySign(String paySign) {
 		this.paySign = paySign;
-	}
-	public String getSendUrl() {
-		return sendUrl;
-	}
-	public void setSendUrl(String sendUrl) {
-		this.sendUrl = sendUrl;
 	}
 	public String getAgent() {
 		return agent;

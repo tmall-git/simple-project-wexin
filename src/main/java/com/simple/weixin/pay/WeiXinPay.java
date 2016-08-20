@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.simple.common.config.EnvPropertiesConfiger;
 import com.simple.common.util.PrimaryKeyUtil;
+import com.simple.weixin.refund.ClientCustomSSL;
 
 public class WeiXinPay {
 
@@ -28,8 +29,9 @@ public class WeiXinPay {
 		parameters.put("nonce_str", PrimaryKeyUtil.getRandomString());
 		parameters.put("body", EnvPropertiesConfiger.getValue("mch_name")+"-"+EnvPropertiesConfiger.getValue("goods_type_name"));
 		parameters.put("out_trade_no", orderNo);
-		parameters.put("total_fee", Integer.parseInt(new DecimalFormat("0").format(money*100)));
-		parameters.put("spbill_create_ip",PayCommonUtil.getIpAddr(request));
+		parameters.put("total_fee", String.valueOf(Integer.parseInt(new DecimalFormat("0").format(money*100))));
+		//parameters.put("spbill_create_ip",PayCommonUtil.getIpAddr(request));
+		parameters.put("spbill_create_ip",PayCommonUtil.getRemoteHost(request));
 		parameters.put("notify_url", EnvPropertiesConfiger.getValue("notify_url"));
 		parameters.put("trade_type", "JSAPI");
 		parameters.put("openid", openId);
@@ -53,7 +55,6 @@ public class WeiXinPay {
         String paySign =  PayCommonUtil.createSign(params);
         params.put("packageValue", "prepay_id="+result.getPrepay_id());    //这里用packageValue是预防package是关键字在js获取值出错
         params.put("paySign", paySign);                                                          //paySign的生成规则和Sign的生成规则一致
-        params.put("sendUrl", EnvPropertiesConfiger.getValue("success_url"));                               //付款成功后跳转的页面
         String userAgent = request.getHeader("user-agent");
         char agent = userAgent.charAt(userAgent.indexOf("MicroMessenger")+15);
         params.put("agent", new String(new char[]{agent}));//微信版本号，用于前面提到的判断用户手机微信的版本是否是5.0以上版本。
@@ -66,7 +67,6 @@ public class WeiXinPay {
         wc.setSignType("MD5");
         wc.setPackageValue("prepay_id="+result.getPrepay_id());
         wc.setPaySign(paySign);
-        wc.setSendUrl(EnvPropertiesConfiger.getValue("success_url"));
         wc.setAgent(new String(new char[]{agent}));
         return wc;
 	}
@@ -94,6 +94,40 @@ public class WeiXinPay {
             System.out.println("-------------"+PayCommonUtil.setXML("SUCCESS", ""));
         }
     }
+	
+	public static WeiXinRefundResult refund(String orderNo,double orderFee) throws Exception {
+		SortedMap<Object,Object> parameters = new TreeMap<Object,Object>();
+		parameters.put("appid", EnvPropertiesConfiger.getValue("weixin_appid"));
+		parameters.put("mch_id", EnvPropertiesConfiger.getValue("mch_id"));
+		parameters.put("nonce_str", PrimaryKeyUtil.getRandomString());
+		parameters.put("out_trade_no", orderNo);
+		parameters.put("out_refund_no", orderNo);
+		parameters.put("total_fee", String.valueOf(Integer.parseInt(new DecimalFormat("0").format(orderFee*100))));
+		parameters.put("refund_fee", String.valueOf(Integer.parseInt(new DecimalFormat("0").format(orderFee*100))));
+		parameters.put("op_user_id", EnvPropertiesConfiger.getValue("mch_id"));
+		String sign = PayCommonUtil.createSign(parameters);
+		parameters.put("sign", sign);
+		String requestXML = PayCommonUtil.getRequestXml(parameters);
+		String result =ClientCustomSSL.doRefund(EnvPropertiesConfiger.getValue("mch_id"), 
+				EnvPropertiesConfiger.getValue("certFilePath"), EnvPropertiesConfiger.getValue("refund_order_url"), requestXML);
+		//String result =WeixinRefundSSL.refund("https://api.mch.weixin.qq.com/secapi/pay/refund", "1377344802", "D://apiclient_cert.p12", requestXML);
+		Map<String, String> map = XMLUtil.doXMLParse(result);//解析微信返回的信息，以Map形式存储便于取值
+		return JSON.parseObject(JSON.toJSONString(map),WeiXinRefundResult.class);
+	}
+	
+	public static void main(String[] args) {
+		try {
+			WeiXinRefundResult xr = refund("20160820150410011NAN2",0.01);
+			System.out.println(xr.getAppid());
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }
 	
 	

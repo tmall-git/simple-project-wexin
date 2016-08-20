@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author zhengfy1
  *
  */
-public class WeiXinPayResult implements Serializable{
+public class WeiXinQueryOrderResult implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
