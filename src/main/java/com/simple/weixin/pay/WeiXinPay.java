@@ -115,6 +115,9 @@ public class WeiXinPay {
 		return JSON.parseObject(JSON.toJSONString(map),WeiXinRefundResult.class);
 	}
 	
+	
+	
+	
 	public static void main(String[] args) {
 		try {
 			WeiXinRefundResult xr = refund("20160820150410011NAN2",0.01);
