@@ -40,7 +40,7 @@ public class PayCommonUtil implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
-	public static String createSign(SortedMap<Object,Object> parameters){
+	public static String createSign(SortedMap<Object,Object> parameters,boolean needsKey){
         StringBuffer sb = new StringBuffer();
         Set es = parameters.entrySet();
         Iterator it = es.iterator();
@@ -53,7 +53,9 @@ public class PayCommonUtil implements Serializable{
                 sb.append(k + "=" + v + "&");
             }
         }
-        sb.append("key=" + "9c25252bad140b09a19f5d189a1f41c1");
+        if (needsKey) {
+        	sb.append("key=" + EnvPropertiesConfiger.getValue("weixin_api_key"));
+        }
         String sign = MD5.stringMD5(sb.toString()).toUpperCase();
         return sign;
     }

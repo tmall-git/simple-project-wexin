@@ -35,7 +35,7 @@ public class WeiXinPay {
 		parameters.put("notify_url", EnvPropertiesConfiger.getValue("notify_url"));
 		parameters.put("trade_type", "JSAPI");
 		parameters.put("openid", openId);
-		String sign = PayCommonUtil.createSign(parameters);
+		String sign = PayCommonUtil.createSign(parameters,true);
 		parameters.put("sign", sign);
 		String requestXML = PayCommonUtil.getRequestXml(parameters);
 		String result =PayCommonUtil.httpsRequest(EnvPropertiesConfiger.getValue("unified_order_url"), "POST", requestXML);
@@ -52,7 +52,7 @@ public class WeiXinPay {
         params.put("nonceStr", nonceStr);
         params.put("package", "prepay_id="+result.getPrepay_id());
         params.put("signType", "MD5");
-        String paySign =  PayCommonUtil.createSign(params);
+        String paySign =  PayCommonUtil.createSign(params,true);
         params.put("packageValue", "prepay_id="+result.getPrepay_id());    //这里用packageValue是预防package是关键字在js获取值出错
         params.put("paySign", paySign);                                                          //paySign的生成规则和Sign的生成规则一致
         String userAgent = request.getHeader("user-agent");
@@ -105,7 +105,7 @@ public class WeiXinPay {
 		parameters.put("total_fee", String.valueOf(Integer.parseInt(new DecimalFormat("0").format(orderFee*100))));
 		parameters.put("refund_fee", String.valueOf(Integer.parseInt(new DecimalFormat("0").format(orderFee*100))));
 		parameters.put("op_user_id", EnvPropertiesConfiger.getValue("mch_id"));
-		String sign = PayCommonUtil.createSign(parameters);
+		String sign = PayCommonUtil.createSign(parameters,true);
 		parameters.put("sign", sign);
 		String requestXML = PayCommonUtil.getRequestXml(parameters);
 		String result =ClientCustomSSL.doRefund(EnvPropertiesConfiger.getValue("mch_id"), 
